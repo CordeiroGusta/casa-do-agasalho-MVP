@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel da ONG — Casa do Agasalho</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#FBF6EC;
+  --cream-alt:#F3EBDA;
+  --terracotta:#C1573E;
+  --terracotta-dark:#9C4530;
+  --maroon:#5C2A20;
+  --sage:#9FB08C;
+  --sage-dark:#748861;
+  --ink:#2E211B;
+  --ink-soft:#6b5c53;
+  --white:#ffffff;
+  --shadow: 0 20px 40px -20px rgba(46,33,27,0.35);
+  --amber:#C9962E;
+  --amber-bg:#FBEBCB;
+  --green-bg:#DDF2DD;
+  --green-text:#2e6b34;
+  --blue-bg:#DCEAFB;
+  --blue-text:#22508a;
+  --border:rgba(92,42,32,0.12);
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  font-family:'Inter', sans-serif;
+  background:var(--cream);
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+}
+h1,h2,h3,h4{font-family:'Fraunces', serif; color:var(--maroon); font-weight:700; line-height:1.15;}
+p{color:var(--ink-soft); line-height:1.6;}
+a{text-decoration:none; color:inherit;}
+button{font-family:inherit; cursor:pointer;}
+
+/* ---------- Topbar ---------- */
+.topbar{
+  background:var(--maroon); color:#fff;
+  padding:14px 26px;
+  display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+}
+.topbar .brand{ display:flex; align-items:center; gap:10px; font-family:'Fraunces',serif; font-weight:700; font-size:18px;}
+.topbar .brand .mark{
+  width:34px;height:34px;border-radius:50%; background:var(--terracotta);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.topbar .brand small{
+  display:block; font-family:'Inter',sans-serif; font-weight:600; font-size:11.5px; opacity:.75; margin-top:1px;
+}
+.topbar-actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+.topbar-actions a, .topbar-actions button{
+  background:rgba(255,255,255,0.12); color:#fff; border:1px solid rgba(255,255,255,0.25);
+  padding:8px 16px; border-radius:20px; font-size:13px; font-weight:600; transition:.2s;
+}
+.topbar-actions a:hover, .topbar-actions button:hover{ background:rgba(255,255,255,0.22); }
+.topbar-actions .danger{ border-color:rgba(255,255,255,0.35); }
+.topbar-actions .danger:hover{ background:var(--terracotta); border-color:var(--terracotta); }
+
+/* ---------- Tabs ---------- */
+.tabs{
+  display:flex; gap:6px; padding:14px 26px 0; background:var(--cream);
+  border-bottom:1px solid var(--border); flex-wrap:wrap;
+}
+.tab-btn{
+  background:transparent; border:none; padding:12px 18px; font-weight:700; font-size:14px;
+  color:var(--ink-soft); border-radius:10px 10px 0 0; position:relative; display:flex; align-items:center; gap:8px;
+}
+.tab-btn.active{ color:var(--terracotta-dark); background:var(--white); }
+.tab-btn.active::after{ content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:var(--terracotta); }
+.tab-badge{
+  background:var(--terracotta); color:#fff; font-size:11px; font-weight:800;
+  border-radius:20px; padding:1px 7px; min-width:18px; text-align:center;
+}
+.tab-badge.zero{ background:#c9bfae; }
+
+main{ padding:26px; max-width:1280px; margin:0 auto; }
+.view{ display:none; }
+.view.active{ display:block; }
+
+/* ---------- Dashboard ---------- */
+.kpi-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:16px; margin-bottom:28px; }
+.kpi-card{
+  background:var(--white); border-radius:16px; padding:20px 22px; box-shadow:var(--shadow);
+  border:1px solid var(--border);
+}
+.kpi-card strong{ display:block; font-family:'Fraunces',serif; font-size:32px; color:var(--terracotta-dark); }
+.kpi-card span{ font-size:13px; font-weight:600; color:var(--ink-soft); }
+
+/* ---------- Fila de atendimentos ---------- */
+.section-title{ margin-bottom:14px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.section-title h2{ font-size:20px; }
+.section-title p{ font-size:13.5px; margin:0; }
+
+.queue-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:14px; margin-bottom:32px; }
+.queue-card{
+  background:var(--white); border-radius:16px; padding:18px; box-shadow:var(--shadow);
+  border:1px solid var(--border); border-left:4px solid var(--amber);
+  display:flex; flex-direction:column; gap:10px;
+}
+.queue-card.active{ border-left-color:var(--sage-dark); }
+.queue-card .qc-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+.queue-card .qc-name{ font-family:'Fraunces',serif; font-weight:700; font-size:16px; color:var(--maroon); }
+.queue-card .qc-status{
+  font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:.04em;
+  padding:3px 9px; border-radius:20px; white-space:nowrap;
+}
+.qc-status.amber{ background:var(--amber-bg); color:#7a5a12; }
+.qc-status.green{ background:var(--green-bg); color:var(--green-text); }
+.queue-card .qc-reason{ font-size:13px; color:var(--ink-soft); }
+.queue-card .qc-meta{ font-size:12px; color:var(--ink-soft); display:flex; gap:12px; flex-wrap:wrap; }
+.queue-card .qc-meta b{ color:var(--ink); }
+.queue-card .qc-actions{ display:flex; gap:8px; margin-top:4px; }
+.qc-btn{
+  flex:1; padding:9px 10px; border-radius:10px; border:none; font-weight:700; font-size:13px; text-align:center;
+}
+.qc-btn.assume{ background:var(--terracotta); color:#fff; }
+.qc-btn.assume:hover{ background:var(--terracotta-dark); }
+.qc-btn.open{ background:var(--sage-dark); color:#fff; }
+.qc-btn.open:hover{ background:#5f7250; }
+.empty-note{
+  background:var(--white); border:1px dashed var(--border); border-radius:14px; padding:26px;
+  text-align:center; color:var(--ink-soft); font-size:14px;
+}
+
+/* ---------- Atendimento aberto (chat do atendente) ---------- */
+.attend-layout{ display:grid; grid-template-columns:320px 1fr; gap:20px; align-items:start; }
+@media (max-width:860px){ .attend-layout{ grid-template-columns:1fr; } }
+
+.context-panel{
+  background:var(--white); border-radius:16px; padding:20px; box-shadow:var(--shadow); border:1px solid var(--border);
+}
+.context-panel h3{ font-size:15px; margin-bottom:14px; }
+.ctx-row{ margin-bottom:12px; }
+.ctx-row label{ display:block; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; color:var(--terracotta-dark); margin-bottom:2px; }
+.ctx-row div{ font-size:14px; color:var(--ink); }
+.ctx-reason-box{
+  background:var(--cream-alt); border-radius:10px; padding:12px; font-size:13px; color:var(--ink); margin-top:6px;
+}
+.back-link{ display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:700; color:var(--terracotta-dark); margin-bottom:14px; }
+
+.attend-chat{
+  background:var(--white); border-radius:16px; box-shadow:var(--shadow); border:1px solid var(--border);
+  display:flex; flex-direction:column; height:600px; overflow:hidden;
+}
+.attend-chat-header{
+  padding:14px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:10px;
+}
+.attend-chat-header h3{ font-size:16px; }
+.attend-chat-header .status-pill{ font-size:11.5px; font-weight:800; padding:4px 10px; border-radius:20px; }
+.status-pill.amber{ background:var(--amber-bg); color:#7a5a12; }
+.status-pill.green{ background:var(--green-bg); color:var(--green-text); }
+.status-pill.blue{ background:var(--blue-bg); color:var(--blue-text); }
+.status-pill.gray{ background:#ececec; color:#555; }
+
+.attend-body{ flex:1; overflow-y:auto; padding:16px 18px; display:flex; flex-direction:column; gap:10px; background:var(--cream-alt); }
+.a-msg-row{ display:flex; flex-direction:column; max-width:78%; }
+.a-msg-row.doador{ align-self:flex-start; }
+.a-msg-row.bot, .a-msg-row.atendente{ align-self:flex-end; align-items:flex-end; }
+.a-msg-row.sistema{ align-self:center; max-width:90%; }
+.a-bubble{ padding:9px 13px; border-radius:14px; font-size:13.5px; line-height:1.5; box-shadow:0 2px 6px -2px rgba(46,33,27,0.15); white-space:pre-line; background:#fff;}
+.a-msg-row.doador .a-bubble{ border-bottom-left-radius:4px; }
+.a-msg-row.bot .a-bubble{ background:#EFE7D8; border-bottom-right-radius:4px; }
+.a-msg-row.atendente .a-bubble{ background:#FCE9E0; border-bottom-right-radius:4px; border:1px solid rgba(193,87,62,0.25);}
+.a-msg-row.sistema .a-bubble{ background:transparent; box-shadow:none; color:var(--ink-soft); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; text-align:center;}
+.a-tag{ font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--terracotta-dark); margin-bottom:2px; padding:0 3px;}
+.a-time{ font-size:10px; color:var(--ink-soft); margin-top:2px; opacity:.75; padding:0 3px;}
+
+.attend-footer{ padding:12px 14px; border-top:1px solid var(--border); display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.attend-footer input{
+  flex:1; min-width:160px; border:1px solid var(--border); border-radius:20px; padding:10px 15px; font-size:14px; font-family:inherit; outline:none;
+}
+.attend-footer input:focus{ border-color:var(--terracotta); }
+.attend-footer .btn{
+  padding:10px 16px; border-radius:20px; border:none; font-weight:700; font-size:13px; white-space:nowrap;
+}
+.attend-footer .btn-send{ background:var(--terracotta); color:#fff; }
+.attend-footer .btn-send:hover{ background:var(--terracotta-dark); }
+.attend-footer .btn-finish{ background:var(--sage-dark); color:#fff; }
+.attend-footer .btn-finish:hover{ background:#5f7250; }
+.attend-footer .btn-assume{ background:var(--terracotta); color:#fff; }
+.attend-footer input:disabled{ background:#f2ede1; }
+
+/* ---------- Planilha ---------- */
+.table-wrap{
+  background:var(--white); border-radius:16px; box-shadow:var(--shadow); border:1px solid var(--border);
+  overflow-x:auto;
+}
+table{ width:100%; border-collapse:collapse; min-width:820px; }
+thead th{
+  text-align:left; font-size:11.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--terracotta-dark);
+  padding:14px 16px; border-bottom:2px solid var(--border); white-space:nowrap; background:var(--cream-alt);
+}
+tbody td{ padding:13px 16px; font-size:13.5px; border-bottom:1px solid var(--border); color:var(--ink); white-space:nowrap; }
+tbody tr:last-child td{ border-bottom:none; }
+tbody tr.new-row{ animation:flashIn 1.8s ease; }
+@keyframes flashIn{ 0%{ background:var(--green-bg); } 100%{ background:transparent; } }
+.status-chip{ font-size:11px; font-weight:800; padding:4px 10px; border-radius:20px; white-space:nowrap; }
+.status-chip.agendada{ background:var(--blue-bg); color:var(--blue-text); }
+.status-chip.aguardando{ background:var(--amber-bg); color:#7a5a12; }
+.via-humano{ font-size:11px; color:var(--sage-dark); font-weight:700; }
+
+/* ---------- Modo demonstração ---------- */
+.demo-panel{
+  background:var(--white); border-radius:16px; padding:20px; box-shadow:var(--shadow); border:1px solid var(--border);
+  margin-bottom:24px;
+}
+.demo-panel h3{ font-size:15px; margin-bottom:6px; }
+.demo-panel p{ font-size:13px; margin-bottom:14px; }
+.demo-btn-row{ display:flex; gap:10px; flex-wrap:wrap; }
+.demo-btn{
+  background:var(--cream-alt); border:1px solid var(--border); color:var(--maroon);
+  padding:9px 15px; border-radius:10px; font-weight:700; font-size:13px;
+}
+.demo-btn:hover{ background:#eadfc8; }
+.demo-btn.danger{ color:var(--terracotta-dark); border-color:rgba(193,87,62,0.35); }
+
+.empty-state{ text-align:center; padding:50px 20px; color:var(--ink-soft); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <span class="mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3l2.5 3H18l-1 4 3 2-3 2 1 4h-3.5L12 21l-2.5-3H6l1-4-3-2 3-2-1-4h3.5L12 3z" stroke-linejoin="round"/></svg></span>
+    <div>Painel da ONG<small>Casa do Agasalho — área interna</small></div>
+  </div>
+  <div class="topbar-actions">
+    <a href="atendimento.html" target="_blank">Simular doador ↗</a>
+    <button id="clearBtn" class="danger">Limpar todos os dados</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="fila">Fila de atendimento <span class="tab-badge" id="badgeFila">0</span></button>
+  <button class="tab-btn" data-tab="planilha">Planilha de doações <span class="tab-badge" id="badgePlanilha">0</span></button>
+  <button class="tab-btn" data-tab="demo">Modo demonstração</button>
+</div>
+
+<main>
+
+  <!-- ===================== VIEW: FILA / ATENDIMENTO ===================== -->
+  <div class="view active" id="view-fila">
+
+    <div class="kpi-grid" id="kpiGrid"></div>
+
+    <div id="queueSection">
+      <div class="section-title">
+        <div>
+          <h2>Atendimentos que precisam de você</h2>
+          <p>Conversas em que o chatbot identificou necessidade de intervenção humana.</p>
+        </div>
+      </div>
+      <div class="queue-grid" id="queueGrid"></div>
+    </div>
+
+    <div id="openAttendance" style="display:none;">
+      <a href="#" class="back-link" id="backToQueue">← Voltar para a fila</a>
+      <div class="attend-layout">
+        <div class="context-panel" id="contextPanel"></div>
+        <div class="attend-chat">
+          <div class="attend-chat-header">
+            <h3 id="attendChatTitle">Atendimento</h3>
+            <span class="status-pill" id="attendStatusPill"></span>
+          </div>
+          <div class="attend-body" id="attendBody"></div>
+          <div class="attend-footer" id="attendFooter"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== VIEW: PLANILHA ===================== -->
+  <div class="view" id="view-planilha">
+    <div class="section-title">
+      <div>
+        <h2>Planilha de doações</h2>
+        <p>Registros criados automaticamente após a confirmação do doador.</p>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="donationsTable">
+        <thead>
+          <tr>
+            <th>ID</th><th>Doador</th><th>Doação</th><th>Quantidade</th>
+            <th>Data</th><th>Horário</th><th>Retirada</th><th>Status</th><th>Registrado em</th>
+          </tr>
+        </thead>
+        <tbody id="donationsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===================== VIEW: DEMO ===================== -->
+  <div class="view" id="view-demo">
+    <div class="demo-panel">
+      <h3>Cenário A — Atendimento automático</h3>
+      <p>Doador → Bot → Coleta de dados → Confirmação → Planilha. Nenhuma etapa exige atendente.</p>
+      <p style="font-size:12.5px;">Para demonstrar: abra "Simular doador", inicie a conversa e escolha "Vou levar até a ONG" quando perguntado sobre a entrega.</p>
+    </div>
+    <div class="demo-panel">
+      <h3>Cenário B — Atendimento humano (principal)</h3>
+      <p>Doador → Bot → Solicitação de retirada → Atendente → Finalização → Bot retoma → Confirmação → Planilha.</p>
+      <p style="font-size:12.5px;">Para demonstrar: na etapa de entrega, escolha "Preciso solicitar retirada". A conversa aparecerá aqui na fila.</p>
+    </div>
+    <div class="demo-panel">
+      <h3>Reiniciar demonstração</h3>
+      <p>Apaga todas as conversas e registros de doação salvos neste navegador, para começar uma nova apresentação do zero.</p>
+      <div class="demo-btn-row">
+        <button class="demo-btn danger" id="clearBtn2">Limpar conversas e planilha</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script src="shared.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  const ATTENDANT_NAME = 'Ana';
+
+  const tabs = document.querySelectorAll('.tab-btn');
+  const views = { fila: document.getElementById('view-fila'), planilha: document.getElementById('view-planilha'), demo: document.getElementById('view-demo') };
+
+  tabs.forEach(t => t.addEventListener('click', () => {
+    tabs.forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    Object.values(views).forEach(v => v.classList.remove('active'));
+    views[t.dataset.tab].classList.add('active');
+    if (t.dataset.tab === 'fila') showQueue();
+  }));
+
+  document.getElementById('clearBtn').addEventListener('click', clearAllData);
+  document.getElementById('clearBtn2').addEventListener('click', clearAllData);
+
+  function clearAllData(){
+    if (confirm('Isso vai apagar todas as conversas e doações registradas neste navegador. Deseja continuar?')) {
+      CA.clearAll();
+      openConvId = null;
+      renderEverything();
+    }
+  }
+
+  let openConvId = null;
+
+  /* ---------- Sincronização entre abas ---------- */
+  window.addEventListener('storage', renderEverything);
+  window.addEventListener('ca:change', renderEverything);
+
+  function renderEverything(){
+    renderKPIs();
+    renderQueueOrOpen();
+    renderDonations();
+  }
+
+  /* ---------- KPIs (derivados dos dados reais) ---------- */
+  function renderKPIs(){
+    const convs = CA.getConversations();
+    const donations = CA.getDonations();
+    const emAndamento = convs.filter(c => c.status !== CA.STATUS.COMPLETED).length;
+    const humanos = convs.filter(c => !!c.attendantName || c.status === CA.STATUS.HUMAN_REQUESTED || c.status === CA.STATUS.HUMAN_ACTIVE).length;
+    const agendadas = donations.filter(d => d.status === 'Agendada').length;
+
+    document.getElementById('kpiGrid').innerHTML = `
+      <div class="kpi-card"><strong>${donations.length}</strong><span>Doações registradas</span></div>
+      <div class="kpi-card"><strong>${emAndamento}</strong><span>Atendimentos em andamento</span></div>
+      <div class="kpi-card"><strong>${humanos}</strong><span>Atendimentos humanos</span></div>
+      <div class="kpi-card"><strong>${agendadas}</strong><span>Retiradas agendadas</span></div>
+    `;
+
+    const pendentes = convs.filter(c => c.status === CA.STATUS.HUMAN_REQUESTED).length;
+    const badgeFila = document.getElementById('badgeFila');
+    badgeFila.textContent = pendentes;
+    badgeFila.classList.toggle('zero', pendentes === 0);
+    const badgePlanilha = document.getElementById('badgePlanilha');
+    badgePlanilha.textContent = donations.length;
+    badgePlanilha.classList.toggle('zero', donations.length === 0);
+  }
+
+  /* ---------- Fila de atendimento ---------- */
+  function showQueue(){
+    openConvId = null;
+    document.getElementById('queueSection').style.display = '';
+    document.getElementById('openAttendance').style.display = 'none';
+    renderQueueOrOpen();
+  }
+
+  document.getElementById('backToQueue').addEventListener('click', (e) => {
+    e.preventDefault();
+    showQueue();
+  });
+
+  function renderQueueOrOpen(){
+    if (openConvId) {
+      const conv = CA.getConversation(openConvId);
+      if (!conv || conv.status === CA.STATUS.COMPLETED && !document.getElementById('openAttendance').dataset.keepOpen) {
+        // se finalizado, ainda deixamos visível até o atendente sair, mas não força saída automática
+      }
+      if (conv) {
+        renderOpenAttendance(conv);
+        return;
+      }
+    }
+    renderQueue();
+  }
+
+  function renderQueue(){
+    const convs = CA.getConversations()
+      .filter(c => c.status === CA.STATUS.HUMAN_REQUESTED || c.status === CA.STATUS.HUMAN_ACTIVE)
+      .sort((a,b) => new Date(a.updatedAt) - new Date(b.updatedAt));
+
+    const grid = document.getElementById('queueGrid');
+
+    if (convs.length === 0) {
+      grid.innerHTML = `<div class="empty-note">Nenhum atendimento aguardando no momento. Quando o chatbot transferir uma conversa, ela aparecerá aqui automaticamente.</div>`;
+      return;
+    }
+
+    grid.innerHTML = convs.map(c => {
+      const isActive = c.status === CA.STATUS.HUMAN_ACTIVE;
+      return `
+      <div class="queue-card ${isActive ? 'active' : ''}">
+        <div class="qc-top">
+          <div class="qc-name">${escapeHtml(c.data.nome || 'Doador sem nome')}</div>
+          <span class="qc-status ${isActive ? 'green' : 'amber'}">${isActive ? 'Atendente conectado' : 'Aguardando atendente'}</span>
+        </div>
+        <div class="qc-reason"><strong>Motivo:</strong> ${escapeHtml(c.transferReason || 'Não especificado')}</div>
+        <div class="qc-meta">
+          <span><b>${escapeHtml(c.data.tipo || '—')}</b></span>
+          <span>${escapeHtml(c.data.quantidade || '—')}</span>
+        </div>
+        <div class="qc-actions">
+          ${isActive
+            ? `<button class="qc-btn open" data-id="${c.id}">Continuar atendimento</button>`
+            : `<button class="qc-btn assume" data-id="${c.id}">Assumir atendimento</button>`
+          }
+        </div>
+      </div>`;
+    }).join('');
+
+    grid.querySelectorAll('.qc-btn.assume').forEach(btn => {
+      btn.addEventListener('click', () => assumeConversation(btn.dataset.id));
+    });
+    grid.querySelectorAll('.qc-btn.open').forEach(btn => {
+      btn.addEventListener('click', () => openConversation(btn.dataset.id));
+    });
+  }
+
+  function assumeConversation(id){
+    const conv = CA.getConversation(id);
+    if (!conv) return;
+    if (conv.status !== CA.STATUS.HUMAN_REQUESTED) {
+      alert('Este atendimento já foi assumido ou não está mais aguardando um atendente.');
+      renderQueue();
+      return;
+    }
+    conv.status = CA.STATUS.HUMAN_ACTIVE;
+    conv.attendantName = ATTENDANT_NAME;
+    CA.addMessage(conv, 'sistema', `${ATTENDANT_NAME} assumiu o atendimento`);
+    CA.addMessage(conv, 'atendente', `Olá, ${conv.data.nome || ''}! Aqui é a ${ATTENDANT_NAME}, da equipe da Casa do Agasalho. Vou continuar seu atendimento.`.replace('  ', ' '));
+    CA.saveConversation(conv);
+    openConversation(id);
+  }
+
+  function openConversation(id){
+    openConvId = id;
+    document.getElementById('queueSection').style.display = 'none';
+    document.getElementById('openAttendance').style.display = '';
+    const conv = CA.getConversation(id);
+    if (conv) renderOpenAttendance(conv);
+  }
+
+  /* ---------- Atendimento aberto ---------- */
+  function renderOpenAttendance(conv){
+    renderContextPanel(conv);
+    renderAttendHeader(conv);
+    renderAttendBody(conv);
+    renderAttendFooter(conv);
+  }
+
+  function renderContextPanel(conv){
+    const d = conv.data;
+    document.getElementById('contextPanel').innerHTML = `
+      <h3>Contexto coletado pelo bot</h3>
+      <div class="ctx-row"><label>Doador</label><div>${escapeHtml(d.nome || '—')}</div></div>
+      <div class="ctx-row"><label>Doação</label><div>${escapeHtml(d.tipo || '—')}</div></div>
+      <div class="ctx-row"><label>Quantidade</label><div>${escapeHtml(d.quantidade || '—')}</div></div>
+      <div class="ctx-row"><label>Forma de entrega</label><div>${d.entrega === 'retirada' ? 'Retirada em domicílio' : (d.entrega === 'levar' ? 'Doador leva até a ONG' : '—')}</div></div>
+      <div class="ctx-row"><label>Data / horário</label><div>${escapeHtml(d.data || '—')} ${d.horario ? '· ' + escapeHtml(d.horario) : ''}</div></div>
+      <div class="ctx-row">
+        <label>Motivo da transferência</label>
+        <div class="ctx-reason-box">${escapeHtml(conv.transferReason || 'Não especificado')}</div>
+      </div>
+    `;
+  }
+
+  function renderAttendHeader(conv){
+    document.getElementById('attendChatTitle').textContent = conv.data.nome ? conv.data.nome : 'Atendimento';
+    const pill = document.getElementById('attendStatusPill');
+    const S = CA.STATUS;
+    const map = {
+      [S.HUMAN_REQUESTED]: ['Aguardando você assumir', 'amber'],
+      [S.HUMAN_ACTIVE]: ['Atendente conectado', 'green'],
+      [S.BOT_RESUMING]: ['Bot retomando', 'blue'],
+      [S.WAITING_CONFIRMATION]: ['Aguardando confirmação do doador', 'blue'],
+      [S.COMPLETED]: ['Concluído', 'gray'],
+      [S.BOT_ACTIVE]: ['Bot ativo', 'gray'],
+    };
+    const [label, cls] = map[conv.status] || ['—', 'gray'];
+    pill.textContent = label;
+    pill.className = 'status-pill ' + cls;
+  }
+
+  function renderAttendBody(conv){
+    const body = document.getElementById('attendBody');
+    body.innerHTML = conv.messages.map(m => {
+      if (m.sender === 'sistema') {
+        return `<div class="a-msg-row sistema"><div class="a-bubble">${escapeHtml(m.text)}</div></div>`;
+      }
+      const tag = m.sender === 'atendente' ? (conv.attendantName || 'Atendente') : (m.sender === 'bot' ? 'Bot' : escapeHtml(conv.data.nome || 'Doador'));
+      return `
+        <div class="a-msg-row ${m.sender}">
+          <div class="a-tag">${escapeHtml(tag)}</div>
+          <div class="a-bubble">${escapeHtml(m.text)}</div>
+          <div class="a-time">${CA.formatTime(m.time)}</div>
+        </div>`;
+    }).join('');
+    body.scrollTop = body.scrollHeight;
+  }
+
+  function renderAttendFooter(conv){
+    const footer = document.getElementById('attendFooter');
+
+    if (conv.status === CA.STATUS.HUMAN_REQUESTED) {
+      footer.innerHTML = `<button class="btn btn-assume" id="assumeInline">Assumir atendimento</button>`;
+      document.getElementById('assumeInline').addEventListener('click', () => assumeConversation(conv.id));
+      return;
+    }
+
+    if (conv.status === CA.STATUS.HUMAN_ACTIVE) {
+      footer.innerHTML = `
+        <input type="text" id="attendInput" placeholder="Digite uma mensagem como atendente..." autocomplete="off">
+        <button class="btn btn-send" id="attendSend">Enviar</button>
+        <button class="btn btn-finish" id="attendFinish">Finalizar atendimento</button>
+      `;
+      const input = document.getElementById('attendInput');
+      const send = () => {
+        const text = input.value.trim();
+        if (!text) return;
+        const fresh = CA.getConversation(conv.id);
+        if (!fresh || fresh.status !== CA.STATUS.HUMAN_ACTIVE) return;
+        CA.addMessage(fresh, 'atendente', text);
+        CA.saveConversation(fresh);
+        input.value = '';
+        renderAttendBody(fresh);
+      };
+      document.getElementById('attendSend').addEventListener('click', send);
+      input.addEventListener('keydown', (e) => { if (e.key === 'Enter') send(); });
+      document.getElementById('attendFinish').addEventListener('click', () => finishHumanAttendance(conv.id));
+      return;
+    }
+
+    if (conv.status === CA.STATUS.COMPLETED) {
+      footer.innerHTML = `<div style="font-size:13px;color:var(--ink-soft);padding:6px 4px;">Atendimento concluído e doação registrada na planilha. Nenhuma ação adicional é necessária.</div>`;
+      return;
+    }
+
+    footer.innerHTML = `<div style="font-size:13px;color:var(--ink-soft);padding:6px 4px;">O bot está conduzindo esta etapa da conversa. Acompanhe em tempo real.</div>`;
+  }
+
+  function finishHumanAttendance(id){
+    const conv = CA.getConversation(id);
+    if (!conv || conv.status !== CA.STATUS.HUMAN_ACTIVE) {
+      alert('Este atendimento não está mais ativo.');
+      return;
+    }
+    conv.status = CA.STATUS.BOT_RESUMING;
+    CA.addMessage(conv, 'sistema', `${conv.attendantName || 'Atendente'} finalizou o atendimento — o bot está retomando a conversa`);
+    CA.saveConversation(conv);
+    renderOpenAttendance(conv);
+    // A página do doador (aba separada) escuta esse evento e assume a retomada.
+  }
+
+  /* ---------- Planilha ---------- */
+  function renderDonations(){
+    const donations = CA.getDonations().slice().sort((a,b) => new Date(b.registradoEm) - new Date(a.registradoEm));
+    const tbody = document.getElementById('donationsBody');
+
+    if (donations.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state">Nenhuma doação registrada ainda. Assim que um doador confirmar os dados no chat, o registro aparece aqui automaticamente.</div></td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = donations.map(d => `
+      <tr>
+        <td>#${escapeHtml(d.id)}</td>
+        <td>${escapeHtml(d.doador)}</td>
+        <td>${escapeHtml(d.tipo)}</td>
+        <td>${escapeHtml(d.quantidade)}</td>
+        <td>${escapeHtml(d.data)}</td>
+        <td>${escapeHtml(d.horario)}</td>
+        <td>${d.retirada}</td>
+        <td><span class="status-chip ${d.status === 'Agendada' ? 'agendada' : 'aguardando'}">${escapeHtml(d.status)}</span>${d.viaAtendenteHumano ? '<br><span class="via-humano">via atendente</span>' : ''}</td>
+        <td>${CA.formatDateBR(d.registradoEm)} ${CA.formatTime(d.registradoEm)}</td>
+      </tr>
+    `).join('');
+  }
+
+  function escapeHtml(s){
+    const d = document.createElement('div');
+    d.textContent = s == null ? '' : String(s);
+    return d.innerHTML;
+  }
+
+  renderEverything();
+})();
+</script>
+</body>
+</html>

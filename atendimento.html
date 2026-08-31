@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atendimento — Casa do Agasalho</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#FBF6EC;
+  --cream-alt:#F3EBDA;
+  --terracotta:#C1573E;
+  --terracotta-dark:#9C4530;
+  --maroon:#5C2A20;
+  --sage:#9FB08C;
+  --sage-dark:#748861;
+  --ink:#2E211B;
+  --ink-soft:#6b5c53;
+  --white:#ffffff;
+  --shadow: 0 20px 40px -20px rgba(46,33,27,0.35);
+  --chat-bg:#EFE7D8;
+  --bubble-bot:#ffffff;
+  --bubble-user:#DCEEDB;
+  --bubble-att:#FCE9E0;
+  --amber:#C9962E;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  font-family:'Inter', sans-serif;
+  background:var(--cream);
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+h1,h2,h3,h4{font-family:'Fraunces', serif; color:var(--maroon); font-weight:700; line-height:1.15;}
+p{color:var(--ink-soft); line-height:1.6;}
+a{text-decoration:none; color:inherit;}
+button{font-family:inherit; cursor:pointer;}
+
+/* ---------- Topbar de demonstração ---------- */
+.demo-topbar{
+  background:var(--maroon); color:#fff;
+  padding:10px 20px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+  flex-wrap:wrap;
+  font-size:13px;
+}
+.demo-topbar .brand{
+  display:flex; align-items:center; gap:8px; font-weight:700; font-family:'Fraunces',serif; font-size:15px;
+}
+.demo-topbar .brand .dot{width:8px;height:8px;border-radius:50%;background:var(--sage);}
+.demo-actions{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+.demo-actions a, .demo-actions button{
+  background:rgba(255,255,255,0.12); color:#fff; border:1px solid rgba(255,255,255,0.25);
+  padding:7px 14px; border-radius:20px; font-size:12.5px; font-weight:600;
+  transition:.2s;
+}
+.demo-actions a:hover, .demo-actions button:hover{ background:rgba(255,255,255,0.22); }
+.demo-actions .primary{ background:var(--terracotta); border-color:var(--terracotta); }
+.demo-actions .primary:hover{ background:var(--terracotta-dark); }
+
+/* ---------- Layout principal ---------- */
+.stage{
+  flex:1; display:flex; align-items:center; justify-content:center;
+  padding:26px 16px 40px;
+}
+.phone-frame{
+  width:100%; max-width:430px;
+  height:min(760px, 88vh);
+  background:var(--chat-bg);
+  border-radius:26px;
+  box-shadow:var(--shadow);
+  border:8px solid var(--maroon);
+  display:flex; flex-direction:column;
+  overflow:hidden;
+  position:relative;
+}
+
+/* ---------- Cabeçalho do chat ---------- */
+.chat-header{
+  background:var(--maroon);
+  color:#fff;
+  padding:14px 16px;
+  display:flex; align-items:center; gap:12px;
+  flex-shrink:0;
+}
+.chat-avatar{
+  width:40px; height:40px; border-radius:50%;
+  background:var(--terracotta);
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.chat-avatar svg{width:22px;height:22px;}
+.chat-header-info{flex:1; min-width:0;}
+.chat-header-info strong{display:block; font-family:'Fraunces',serif; font-size:16px;}
+.chat-status{
+  display:flex; align-items:center; gap:6px; font-size:12px; opacity:0.9; margin-top:2px;
+}
+.chat-status .led{width:7px;height:7px;border-radius:50%; flex-shrink:0;}
+.led.bot{background:#5FD068;}
+.led.pending{background:var(--amber);}
+.led.human{background:#5FD068;}
+.led.resuming{background:#6AA9E9;}
+.led.done{background:#9a9a9a;}
+
+/* ---------- Faixa de estado ---------- */
+.state-banner{
+  padding:8px 16px;
+  font-size:12.5px;
+  font-weight:700;
+  text-align:center;
+  flex-shrink:0;
+  display:none;
+  letter-spacing:.01em;
+}
+.state-banner.show{display:block;}
+.state-banner.amber{background:#FBEBCB; color:#7a5a12;}
+.state-banner.green{background:#DDF2DD; color:#2e6b34;}
+.state-banner.blue{background:#DCEAFB; color:#22508a;}
+.state-banner.gray{background:#ECECEC; color:#555;}
+
+/* ---------- Corpo da conversa ---------- */
+.chat-body{
+  flex:1; overflow-y:auto;
+  padding:16px 12px;
+  display:flex; flex-direction:column; gap:10px;
+  background-image: radial-gradient(rgba(92,42,32,0.05) 1px, transparent 1px);
+  background-size:18px 18px;
+}
+.msg-row{ display:flex; flex-direction:column; max-width:82%; }
+.msg-row.bot, .msg-row.atendente, .msg-row.sistema{ align-self:flex-start; }
+.msg-row.doador{ align-self:flex-end; align-items:flex-end; }
+
+.bubble{
+  padding:10px 13px;
+  border-radius:14px;
+  font-size:14px;
+  line-height:1.5;
+  box-shadow:0 2px 6px -2px rgba(46,33,27,0.18);
+  white-space:pre-line;
+}
+.msg-row.bot .bubble{ background:var(--bubble-bot); border-bottom-left-radius:4px; }
+.msg-row.atendente .bubble{ background:var(--bubble-att); border-bottom-left-radius:4px; border:1px solid rgba(193,87,62,0.25);}
+.msg-row.doador .bubble{ background:var(--bubble-user); border-bottom-right-radius:4px; }
+.msg-row.sistema{ align-self:center; max-width:90%; }
+.msg-row.sistema .bubble{
+  background:transparent; box-shadow:none; color:var(--ink-soft);
+  font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.06em;
+  text-align:center; padding:4px 10px;
+}
+.sender-tag{
+  font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;
+  color:var(--terracotta-dark); margin-bottom:2px; padding:0 3px;
+}
+.msg-row.atendente .sender-tag{ color:#a5522f; }
+.msg-time{ font-size:10px; color:var(--ink-soft); margin-top:3px; padding:0 3px; opacity:.75;}
+
+.typing{
+  align-self:flex-start; display:flex; gap:4px; padding:12px 14px;
+  background:var(--bubble-bot); border-radius:14px; border-bottom-left-radius:4px;
+  box-shadow:0 2px 6px -2px rgba(46,33,27,0.18);
+}
+.typing span{width:6px;height:6px;border-radius:50%;background:#b8ab9c; animation:blink 1.2s infinite ease-in-out;}
+.typing span:nth-child(2){animation-delay:.2s;}
+.typing span:nth-child(3){animation-delay:.4s;}
+@keyframes blink{ 0%,80%,100%{opacity:.3; transform:translateY(0);} 40%{opacity:1; transform:translateY(-2px);} }
+
+/* ---------- Botões rápidos ---------- */
+.quick-replies{
+  display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; align-self:flex-start; max-width:100%;
+}
+.quick-btn{
+  background:#fff; border:1.5px solid var(--terracotta); color:var(--terracotta-dark);
+  font-weight:700; font-size:12.5px; padding:8px 14px; border-radius:20px;
+  transition:.2s;
+}
+.quick-btn:hover{ background:var(--terracotta); color:#fff; }
+.quick-btn:disabled{ opacity:.45; cursor:not-allowed; }
+
+/* ---------- Rodapé / input ---------- */
+.chat-footer{
+  padding:10px 12px; background:var(--cream-alt); flex-shrink:0;
+  display:flex; align-items:center; gap:8px;
+  border-top:1px solid rgba(92,42,32,0.08);
+}
+.chat-footer input{
+  flex:1; border:1px solid rgba(92,42,32,0.18); border-radius:22px;
+  padding:11px 16px; font-size:14px; font-family:inherit; outline:none;
+  background:#fff; color:var(--ink);
+}
+.chat-footer input:focus{ border-color:var(--terracotta); }
+.chat-footer input:disabled{ background:#eee7d8; color:#a99; }
+.send-btn{
+  width:42px; height:42px; border-radius:50%; border:none;
+  background:var(--terracotta); color:#fff; display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; transition:.2s;
+}
+.send-btn:hover{ background:var(--terracotta-dark); }
+.send-btn:disabled{ background:#c8bdae; cursor:not-allowed; }
+.chat-footer.locked{ opacity:0.7; }
+.locked-note{
+  text-align:center; font-size:11.5px; color:var(--ink-soft); padding:4px 0 0;
+}
+
+/* ---------- Scrollbar discreta ---------- */
+.chat-body::-webkit-scrollbar{ width:6px; }
+.chat-body::-webkit-scrollbar-thumb{ background:rgba(92,42,32,0.2); border-radius:6px; }
+
+@media (max-width:480px){
+  .phone-frame{ border-radius:0; border-width:0; height:100vh; max-width:100%; }
+  .stage{ padding:0; }
+  .demo-topbar{ font-size:12px; }
+}
+</style>
+</head>
+<body>
+
+<div class="demo-topbar">
+  <div class="brand"><span class="dot"></span> Casa do Agasalho — Demonstração do atendimento automatizado</div>
+  <div class="demo-actions">
+    <a href="casa-do-agasalho.html">← Voltar ao site</a>
+    <a href="painel-ong.html" target="_blank">Painel da ONG ↗</a>
+    <button id="restartBtn">Reiniciar conversa</button>
+  </div>
+</div>
+
+<div class="stage">
+  <div class="phone-frame">
+    <div class="chat-header">
+      <div class="chat-avatar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3l2.5 3H18l-1 4 3 2-3 2 1 4h-3.5L12 21l-2.5-3H6l1-4-3-2 3-2-1-4h3.5L12 3z" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="chat-header-info">
+        <strong>Casa do Agasalho</strong>
+        <div class="chat-status" id="chatStatus">
+          <span class="led bot"></span><span id="chatStatusText">Atendimento automático</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="state-banner" id="stateBanner"></div>
+
+    <div class="chat-body" id="chatBody"></div>
+
+    <div class="chat-footer" id="chatFooter">
+      <input type="text" id="msgInput" placeholder="Digite uma mensagem..." autocomplete="off">
+      <button class="send-btn" id="sendBtn" aria-label="Enviar mensagem">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7Z"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  const chatBody = document.getElementById('chatBody');
+  const msgInput = document.getElementById('msgInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const chatFooter = document.getElementById('chatFooter');
+  const stateBanner = document.getElementById('stateBanner');
+  const chatStatusText = document.getElementById('chatStatusText');
+  const chatStatusLed = document.querySelector('#chatStatus .led');
+  const restartBtn = document.getElementById('restartBtn');
+
+  const CONV_ID_KEY = 'ca_active_conv_id';
+  let conv = null;
+  let renderedMsgIds = new Set();
+
+  /* ---------- Inicialização ---------- */
+  function init(){
+    const savedId = localStorage.getItem(CONV_ID_KEY);
+    if (savedId) {
+      conv = CA.getConversation(savedId);
+    }
+    if (!conv) {
+      startNewConversation();
+    } else {
+      renderAll();
+      refreshInputState();
+      if (conv.messages.length === 0) {
+        botStart();
+      }
+    }
+  }
+
+  function startNewConversation(){
+    conv = CA.createConversation();
+    localStorage.setItem(CONV_ID_KEY, conv.id);
+    chatBody.innerHTML = '';
+    renderedMsgIds = new Set();
+    renderAll();
+    botStart();
+  }
+
+  restartBtn.addEventListener('click', () => {
+    if (confirm('Reiniciar a conversa? O histórico atual desta simulação será substituído por um novo atendimento.')) {
+      startNewConversation();
+    }
+  });
+
+  /* ---------- Sincronização entre abas (ex: atendente respondendo) ----------
+     'storage' dispara em OUTRAS abas quando o localStorage muda.
+     'ca:change' (customEvent) dispara na MESMA aba que fez a mudança.
+     Ambos convergem para syncFromStorage(), que detecta transições de
+     estado relevantes (ex: HUMAN_ACTIVE -> BOT_RESUMING) e aciona o bot. */
+  window.addEventListener('storage', (e) => {
+    if (!e.key || e.key === CA.KEYS.CONVERSATIONS) syncFromStorage();
+  });
+  window.addEventListener('ca:change', (e) => {
+    if (e.detail && (e.detail.key === CA.KEYS.CONVERSATIONS || e.detail.key === 'all')) syncFromStorage();
+  });
+
+  let syncing = false;
+  function syncFromStorage(){
+    if (!conv || syncing) return;
+    const fresh = CA.getConversation(conv.id);
+    if (!fresh) return;
+    const prevStatus = conv.status;
+    conv = fresh;
+    renderAll();
+
+    if (prevStatus === CA.STATUS.HUMAN_ACTIVE && conv.status === CA.STATUS.BOT_RESUMING) {
+      syncing = true;
+      resumeAfterHuman().finally(() => { syncing = false; });
+    } else {
+      refreshInputState();
+    }
+  }
+
+  /* ---------- Renderização ---------- */
+  function renderAll(){
+    conv.messages.forEach(m => {
+      if (!renderedMsgIds.has(m.id)) {
+        appendMessageEl(m);
+        renderedMsgIds.add(m.id);
+      }
+    });
+    updateStatusUI();
+    scrollToBottom();
+  }
+
+  function appendMessageEl(m){
+    const row = document.createElement('div');
+    row.className = 'msg-row ' + m.sender;
+
+    if (m.sender === 'sistema') {
+      row.innerHTML = `<div class="bubble">${escapeHtml(m.text)}</div>`;
+      chatBody.appendChild(row);
+      return;
+    }
+
+    let tagHtml = '';
+    if (m.sender === 'atendente') {
+      tagHtml = `<div class="sender-tag">${escapeHtml(conv.attendantName || 'Atendente')}</div>`;
+    } else if (m.sender === 'bot') {
+      tagHtml = `<div class="sender-tag">Casa do Agasalho · bot</div>`;
+    }
+
+    row.innerHTML = `
+      ${tagHtml}
+      <div class="bubble">${escapeHtml(m.text)}</div>
+      <div class="msg-time">${CA.formatTime(m.time)}</div>
+    `;
+
+    if (m.buttons && m.buttons.length) {
+      const qr = document.createElement('div');
+      qr.className = 'quick-replies';
+      m.buttons.forEach(label => {
+        const b = document.createElement('button');
+        b.className = 'quick-btn';
+        b.textContent = label;
+        b.addEventListener('click', () => handleQuickReply(label, b, qr));
+        qr.appendChild(b);
+      });
+      row.appendChild(qr);
+    }
+
+    chatBody.appendChild(row);
+  }
+
+  function escapeHtml(s){
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  function scrollToBottom(){
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }
+
+  function updateStatusUI(){
+    const S = CA.STATUS;
+    let ledClass = 'bot', text = 'Atendimento automático';
+    let banner = { show:false, text:'', color:'' };
+
+    switch(conv.status){
+      case S.BOT_ACTIVE:
+        ledClass = 'bot'; text = 'Atendimento automático';
+        break;
+      case S.HUMAN_REQUESTED:
+        ledClass = 'pending'; text = 'Aguardando atendente...';
+        banner = { show:true, text:'🟡 Atendimento humano solicitado', color:'amber' };
+        break;
+      case S.HUMAN_ACTIVE:
+        ledClass = 'human'; text = (conv.attendantName || 'Atendente') + ' está atendendo';
+        banner = { show:true, text:'🟢 Atendente conectado', color:'green' };
+        break;
+      case S.BOT_RESUMING:
+        ledClass = 'resuming'; text = 'Bot retomando atendimento';
+        banner = { show:true, text:'🔵 Bot retomando atendimento', color:'blue' };
+        break;
+      case S.WAITING_CONFIRMATION:
+        ledClass = 'resuming'; text = 'Aguardando confirmação dos dados';
+        banner = { show:true, text:'🔵 Confirme os dados da sua doação', color:'blue' };
+        break;
+      case S.COMPLETED:
+        ledClass = 'done'; text = 'Atendimento concluído';
+        banner = { show:true, text:'✓ Doação registrada com sucesso', color:'green' };
+        break;
+    }
+
+    chatStatusLed.className = 'led ' + ledClass;
+    chatStatusText.textContent = text;
+
+    stateBanner.className = 'state-banner' + (banner.show ? ' show ' + banner.color : '');
+    stateBanner.textContent = banner.text;
+  }
+
+  function refreshInputState(){
+    const S = CA.STATUS;
+    const disable = conv.status === S.HUMAN_REQUESTED ||
+                    conv.status === S.HUMAN_ACTIVE ||
+                    conv.status === S.COMPLETED;
+    msgInput.disabled = disable;
+    sendBtn.disabled = disable;
+    chatFooter.classList.toggle('locked', disable);
+
+    let note = document.querySelector('.locked-note');
+    if (disable) {
+      if (!note) {
+        note = document.createElement('div');
+        note.className = 'locked-note';
+        chatFooter.parentElement.insertBefore(note, chatFooter.nextSibling);
+      }
+      if (conv.status === S.HUMAN_REQUESTED) note.textContent = 'Aguardando um atendente assumir a conversa...';
+      else if (conv.status === S.HUMAN_ACTIVE) note.textContent = 'Um atendente está te respondendo. Aguarde.';
+      else if (conv.status === S.COMPLETED) note.textContent = 'Este atendimento foi concluído. Clique em "Reiniciar conversa" para simular outro.';
+      note.style.display = 'block';
+    } else if (note) {
+      note.style.display = 'none';
+    }
+  }
+
+  /* ---------- Envio de mensagens do doador ---------- */
+  function disableAllQuickReplies(){
+    document.querySelectorAll('.quick-replies button:not(:disabled)').forEach(b => b.disabled = true);
+  }
+
+  function sendUserMessage(text){
+    text = text.trim();
+    if (!text) return;
+    if ([CA.STATUS.HUMAN_REQUESTED, CA.STATUS.HUMAN_ACTIVE, CA.STATUS.COMPLETED].includes(conv.status)) return;
+
+    disableAllQuickReplies();
+    CA.addMessage(conv, 'doador', text);
+    renderAll();
+    msgInput.value = '';
+
+    routeUserInput(text, false);
+  }
+
+  sendBtn.addEventListener('click', () => sendUserMessage(msgInput.value));
+  msgInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') sendUserMessage(msgInput.value);
+  });
+
+  function handleQuickReply(label, btnEl, groupEl){
+    // desabilita todo o grupo após clique, para não reenviar
+    groupEl.querySelectorAll('button').forEach(b => b.disabled = true);
+    CA.addMessage(conv, 'doador', label);
+    renderAll();
+    routeUserInput(label, true);
+  }
+
+  /* ---------- Bot: mensagens com "digitando..." ---------- */
+  function botSay(text, opts){
+    opts = opts || {};
+    return new Promise(resolve => {
+      showTyping();
+      const delay = 600 + Math.min(text.length * 8, 900);
+      setTimeout(() => {
+        hideTyping();
+        CA.addMessage(conv, 'bot', text, opts);
+        renderAll();
+        resolve();
+      }, delay);
+    });
+  }
+
+  let typingEl = null;
+  function showTyping(){
+    typingEl = document.createElement('div');
+    typingEl.className = 'typing';
+    typingEl.innerHTML = '<span></span><span></span><span></span>';
+    chatBody.appendChild(typingEl);
+    scrollToBottom();
+  }
+  function hideTyping(){
+    if (typingEl) { typingEl.remove(); typingEl = null; }
+  }
+
+  /* ---------- Fluxo conversacional do bot ---------- */
+  async function botStart(){
+    await botSay('Olá! Seja bem-vindo à Casa do Agasalho. 💛\nAgradecemos muito pelo seu interesse em ajudar.');
+    await botSay('Vou fazer algumas perguntas rápidas para registrar sua doação. Para começar, qual é o seu nome?');
+    conv.step = CA.STEP.ASK_NAME;
+    CA.saveConversation(conv);
+  }
+
+  async function handleUserInput(text, fromButton){
+    const STEP = CA.STEP;
+    const isFixingOneField = !!conv.fixingField;
+
+    switch (conv.step) {
+
+      case STEP.ASK_NAME: {
+        const nome = text.split(' ')[0].replace(/[^\p{L}]/gu, '');
+        conv.data.nome = capitalize(nome) || text;
+        CA.saveConversation(conv);
+        if (isFixingOneField) { conv.fixingField = null; await botSay(`Nome atualizado para ${conv.data.nome}.`); return goToConfirmation(); }
+        await botSay(`Prazer, ${conv.data.nome}! 😊`);
+        await botSay('O que você gostaria de doar?', { buttons: ['Roupas de inverno', 'Agasalhos', 'Cobertores', 'Calçados', 'Outros'] });
+        conv.step = STEP.ASK_TYPE;
+        CA.saveConversation(conv);
+        break;
+      }
+
+      case STEP.ASK_TYPE: {
+        const guessed = CA.guessDonationType(text);
+        conv.data.tipo = guessed || text;
+        CA.saveConversation(conv);
+        if (isFixingOneField) { conv.fixingField = null; await botSay(`Tipo de doação atualizado para ${conv.data.tipo}.`); return goToConfirmation(); }
+        await botSay(`Ótimo, ${conv.data.tipo.toLowerCase()} fazem muita diferença nesta época do ano.`);
+        await botSay('Você tem uma ideia aproximada da quantidade de peças?');
+        conv.step = STEP.ASK_QTY;
+        CA.saveConversation(conv);
+        break;
+      }
+
+      case STEP.ASK_QTY: {
+        conv.data.quantidade = text;
+        CA.saveConversation(conv);
+        if (isFixingOneField) { conv.fixingField = null; await botSay(`Quantidade atualizada para ${conv.data.quantidade}.`); return goToConfirmation(); }
+        await botSay('Perfeito. E como prefere fazer a entrega?', { buttons: ['Vou levar até a ONG', 'Preciso solicitar retirada'] });
+        conv.step = STEP.ASK_DELIVERY;
+        CA.saveConversation(conv);
+        break;
+      }
+
+      case STEP.ASK_DELIVERY: {
+        const intent = CA.detectDeliveryIntent(text) || (fromButton && text.toLowerCase().includes('levar') ? 'levar' : null) || (fromButton && text.toLowerCase().includes('retirada') ? 'retirada' : null);
+
+        if (intent === 'retirada' || CA.detectsHumanNeed(text)) {
+          conv.data.entrega = 'retirada';
+          CA.saveConversation(conv);
+          await botSay('Entendi. Para organizar uma retirada, preciso encaminhar seu atendimento para uma pessoa da nossa equipe. Vou transferir a conversa para um atendente. 🙂');
+          transferToHuman('Doador solicita retirada das peças em sua residência.');
+          return;
+        }
+
+        conv.data.entrega = 'levar';
+        CA.saveConversation(conv);
+        await botSay('Combinado! Para qual data você pretende trazer a doação até a nossa sede?');
+        conv.step = STEP.ASK_DATE;
+        CA.saveConversation(conv);
+        break;
+      }
+
+      case STEP.ASK_DATE: {
+        conv.data.data = text;
+        CA.saveConversation(conv);
+        if (isFixingOneField) { conv.fixingField = null; await botSay(`Data atualizada para ${conv.data.data}.`); return goToConfirmation(); }
+        await botSay('Tem algum horário de preferência? Se não tiver, pode dizer "sem preferência".');
+        conv.step = STEP.ASK_TIME;
+        CA.saveConversation(conv);
+        break;
+      }
+
+      case STEP.ASK_TIME: {
+        conv.data.horario = text;
+        CA.saveConversation(conv);
+        if (isFixingOneField) { conv.fixingField = null; await botSay(`Horário atualizado para ${conv.data.horario}.`); return goToConfirmation(); }
+        await botSay('Anotado! Deseja deixar alguma observação sobre a doação? Se não, pode dizer "não".');
+        conv.step = STEP.DONE_COLLECTING;
+        CA.saveConversation(conv);
+        break;
+      }
+
+      case STEP.DONE_COLLECTING: {
+        const norm = CA.normalize(text);
+        conv.data.observacoes = (norm === 'nao' || norm === 'não') ? '' : text;
+        CA.saveConversation(conv);
+        goToConfirmation();
+        break;
+      }
+
+      default: {
+        // Qualquer mensagem fora do fluxo esperado, ou após o fim da coleta
+        if (CA.detectsHumanNeed(text)) {
+          await botSay('Entendi. Para garantir que você receba a orientação correta, vou encaminhar seu atendimento para uma pessoa da nossa equipe.');
+          transferToHuman('Solicitação fora do fluxo automático de doação.');
+        } else {
+          await botSay('Certo! Vou encaminhar sua mensagem para um atendente confirmar os detalhes com você.');
+          transferToHuman('Mensagem fora do escopo do atendimento automático.');
+        }
+      }
+    }
+  }
+
+  function capitalize(s){
+    if (!s) return s;
+    return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+  }
+
+  /* ---------- Transferência para humano ---------- */
+  function transferToHuman(reason){
+    conv.status = CA.STATUS.HUMAN_REQUESTED;
+    conv.transferReason = reason;
+    CA.addMessage(conv, 'sistema', 'Atendimento encaminhado para a equipe da Casa do Agasalho');
+    CA.saveConversation(conv);
+    renderAll();
+    refreshInputState();
+  }
+
+  /* ---------- Confirmação final (retomada do bot) ---------- */
+  async function goToConfirmation(){
+    conv.status = CA.STATUS.WAITING_CONFIRMATION;
+    CA.saveConversation(conv);
+    refreshInputState();
+
+    const d = conv.data;
+    const resumo =
+`📦 Doação:
+${d.tipo || '—'}
+
+Quantidade:
+${d.quantidade || '—'}
+
+📅 Data:
+${d.data || 'A combinar'}
+
+🕐 Horário:
+${d.horario || '—'}
+
+🚚 Retirada:
+${d.entrega === 'retirada' ? 'Sim' : 'Não, doador leva até a ONG'}${d.observacoes ? '\n\nObservações:\n' + d.observacoes : ''}`;
+
+    await botSay(`Obrigado, ${d.nome}! Vou apenas confirmar os dados da sua doação para registrá-la corretamente.`);
+    await botSay(resumo);
+    await botSay('Essas informações estão corretas?', { buttons: ['Sim, está correto', 'Corrigir informação'] });
+  }
+
+  /* ---------- Retomada do bot após finalização do atendente ---------- */
+  async function resumeAfterHuman(){
+    await botSay(`Obrigado, ${conv.data.nome || ''}! O atendimento foi concluído e vou apenas confirmar os dados da sua doação para registrá-la corretamente.`.replace('  ', ' '));
+    const d = conv.data;
+    const resumo =
+`📦 Doação:
+${d.tipo || '—'}
+
+Quantidade:
+${d.quantidade || '—'}
+
+📅 Data:
+${d.data || 'A combinar'}
+
+🕐 Horário:
+${d.horario || '—'}
+
+🚚 Retirada:
+${d.entrega === 'retirada' ? 'Sim' : 'Não'}${d.observacoes ? '\n\nObservações:\n' + d.observacoes : ''}`;
+    await botSay(resumo);
+    await botSay('Essas informações estão corretas?', { buttons: ['Sim, está correto', 'Corrigir informação'] });
+    conv.status = CA.STATUS.WAITING_CONFIRMATION;
+    CA.saveConversation(conv);
+    refreshInputState();
+  }
+
+  /* ---------- Confirmação / correção nos botões finais ---------- */
+  async function confirmDonation(){
+    if (conv.status === CA.STATUS.COMPLETED) return; // trava dupla finalização
+    await botSay('Perfeito! Sua doação foi registrada com sucesso. Agradecemos muito pela sua contribuição à Casa do Agasalho. 💛');
+    CA.addDonation(conv);
+    conv.status = CA.STATUS.COMPLETED;
+    CA.saveConversation(conv);
+    refreshInputState();
+    updateStatusUI();
+  }
+
+  async function askWhatToCorrect(){
+    await botSay('Sem problemas! Qual informação você quer corrigir: nome, tipo de doação, quantidade, data ou horário?');
+    conv.step = 'CORRECTING';
+    CA.saveConversation(conv);
+  }
+
+  async function handleCorrectionChoice(text){
+    const norm = CA.normalize(text);
+    let matched = true;
+    if (norm.includes('nome')) { conv.step = CA.STEP.ASK_NAME; await botSay('Sem problemas, qual é o nome correto?'); }
+    else if (norm.includes('tipo') || norm.includes('doacao')) { conv.step = CA.STEP.ASK_TYPE; await botSay('Certo, o que você vai doar?', { buttons: ['Roupas de inverno', 'Agasalhos', 'Cobertores', 'Calçados', 'Outros'] }); }
+    else if (norm.includes('quantidade')) { conv.step = CA.STEP.ASK_QTY; await botSay('Certo, qual a quantidade aproximada?'); }
+    else if (norm.includes('data')) { conv.step = CA.STEP.ASK_DATE; await botSay('Certo, qual a nova data?'); }
+    else if (norm.includes('horario')) { conv.step = CA.STEP.ASK_TIME; await botSay('Certo, qual o novo horário?'); }
+    else { matched = false; await botSay('Não entendi qual informação corrigir. Pode dizer: nome, tipo, quantidade, data ou horário.'); }
+
+    if (matched) {
+      // Volta o status para BOT_ACTIVE enquanto refaz somente essa etapa;
+      // fixingField sinaliza para o handler devolver direto à confirmação.
+      conv.status = CA.STATUS.BOT_ACTIVE;
+      conv.fixingField = true;
+    }
+    CA.saveConversation(conv);
+    refreshInputState();
+  }
+
+  /* ---------- Roteador principal de entrada do usuário ---------- */
+  async function routeUserInput(text, fromButton){
+    // Já concluído: nada a processar (proteção contra dupla finalização)
+    if (conv.status === CA.STATUS.COMPLETED) return;
+
+    // Etapa de confirmação final
+    if (conv.status === CA.STATUS.WAITING_CONFIRMATION) {
+      if (fromButton && text === 'Sim, está correto') { await confirmDonation(); return; }
+      if (fromButton && text === 'Corrigir informação') { await askWhatToCorrect(); return; }
+      if (conv.step === 'CORRECTING') { await handleCorrectionChoice(text); return; }
+      return;
+    }
+
+    // Retomando um step específico após correção (status BOT_ACTIVE, mas
+    // com dados já parcialmente preenchidos) — ao terminar a etapa,
+    // handleUserInput cai naturalmente na sequência e volta a DONE_COLLECTING
+    // que já leva à confirmação novamente.
+    return handleUserInput(text, fromButton);
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
