@@ -240,11 +240,30 @@ const CA = (function () {
     return null;
   }
 
+  /* ---------- Validação básica de respostas ---------- */
+  function isValidName(text) {
+    const t = (text || "").trim();
+    if (t.length < 2) return false;
+    // precisa ter ao menos 2 letras e não pode ser só números/símbolos
+    const letters = t.replace(/[^\p{L}]/gu, "");
+    return letters.length >= 2;
+  }
+
+  function isValidQuantity(text) {
+    const t = normalize(text);
+    if (!t) return false;
+    // aceita números (ex: "15", "15 peças") ou palavras que indicam quantidade
+    const hasNumber = /\d/.test(t);
+    const wordsQty = ["poucas", "algumas", "varias", "várias", "muitas", "bastante", "bastantes", "uma caixa", "um saco", "algumas pecas", "algumas peças"];
+    return hasNumber || wordsQty.some((w) => t.includes(normalize(w)));
+  }
+
   return {
     KEYS, STATUS, STEP,
     uid, nowISO, formatTime, formatDateBR,
     getConversations, getConversation, saveConversation, createConversation, addMessage,
     getDonations, addDonation, clearAll,
     normalize, detectsHumanNeed, detectDeliveryIntent, guessDonationType,
+    isValidName, isValidQuantity,
   };
 })();

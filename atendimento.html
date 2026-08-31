@@ -435,7 +435,6 @@ button{font-family:inherit; cursor:pointer;}
   function refreshInputState(){
     const S = CA.STATUS;
     const disable = conv.status === S.HUMAN_REQUESTED ||
-                    conv.status === S.HUMAN_ACTIVE ||
                     conv.status === S.COMPLETED;
     msgInput.disabled = disable;
     sendBtn.disabled = disable;
@@ -449,7 +448,6 @@ button{font-family:inherit; cursor:pointer;}
         chatFooter.parentElement.insertBefore(note, chatFooter.nextSibling);
       }
       if (conv.status === S.HUMAN_REQUESTED) note.textContent = 'Aguardando um atendente assumir a conversa...';
-      else if (conv.status === S.HUMAN_ACTIVE) note.textContent = 'Um atendente está te respondendo. Aguarde.';
       else if (conv.status === S.COMPLETED) note.textContent = 'Este atendimento foi concluído. Clique em "Reiniciar conversa" para simular outro.';
       note.style.display = 'block';
     } else if (note) {
@@ -465,13 +463,14 @@ button{font-family:inherit; cursor:pointer;}
   function sendUserMessage(text){
     text = text.trim();
     if (!text) return;
-    if ([CA.STATUS.HUMAN_REQUESTED, CA.STATUS.HUMAN_ACTIVE, CA.STATUS.COMPLETED].includes(conv.status)) return;
+    if ([CA.STATUS.HUMAN_REQUESTED, CA.STATUS.COMPLETED].includes(conv.status)) return;
 
     disableAllQuickReplies();
     CA.addMessage(conv, 'doador', text);
     renderAll();
     msgInput.value = '';
 
+    if (conv.status === CA.STATUS.HUMAN_ACTIVE) return; // atendente responde pelo painel
     routeUserInput(text, false);
   }
 
@@ -530,6 +529,10 @@ button{font-family:inherit; cursor:pointer;}
     switch (conv.step) {
 
       case STEP.ASK_NAME: {
+        if (!fromButton && !CA.isValidName(text)) {
+          await botSay('Desculpe, não consegui identificar um nome válido. Pode me dizer como posso te chamar?');
+          break;
+        }
         const nome = text.split(' ')[0].replace(/[^\p{L}]/gu, '');
         conv.data.nome = capitalize(nome) || text;
         CA.saveConversation(conv);
@@ -554,6 +557,10 @@ button{font-family:inherit; cursor:pointer;}
       }
 
       case STEP.ASK_QTY: {
+        if (!fromButton && !CA.isValidQuantity(text)) {
+          await botSay('Não entendi bem a quantidade. Pode me dar um número aproximado, tipo "10 peças" ou "algumas peças"?');
+          break;
+        }
         conv.data.quantidade = text;
         CA.saveConversation(conv);
         if (isFixingOneField) { conv.fixingField = null; await botSay(`Quantidade atualizada para ${conv.data.quantidade}.`); return goToConfirmation(); }
