@@ -1,4 +1,19 @@
-# MVP — Atendimento Automatizado Casa do Agasalho
+# Casa do Agasalho — MVP de Atendimento Automatizado
+
+MVP desenvolvido para a disciplina **Projeto Integrador II**, simulando um 
+sistema de atendimento automatizado via WhatsApp para uma ONG de doação 
+de roupas de inverno.
+
+O projeto é composto por três frentes:
+
+- **Landing page institucional** — apresenta a ONG, sua causa, formas de 
+  ajudar e pontos de coleta.
+- **Chat do doador** — simula o atendimento via WhatsApp, onde um chatbot 
+  coleta os dados da doação e permite agendar a retirada em domicílio ou 
+  a entrega na sede.
+- **Painel da ONG** — permite à equipe acompanhar as conversas em tempo 
+  real, assumir o atendimento manualmente quando o bot não resolve, e 
+  visualizar as doações registradas.
 
 ## Arquivos
 - `casa-do-agasalho.html` — site institucional (landing page)
